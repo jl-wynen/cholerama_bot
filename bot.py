@@ -46,7 +46,22 @@ class Bot:
 
         self.rng = np.random.default_rng(SEED)
 
-        self.pattern = load_pattern("timebomb")
+        pattern_name = "blocklayingswitchenginepredecessor"
+        pattern = load_pattern(pattern_name)
+
+        bl = pattern.rotate(0).place_centre(
+            offset=(patch_size[0] // 4, patch_size[1] // 4)
+        )
+        tl = pattern.rotate(1).place_centre(
+            offset=(patch_size[0] // 4, 3 * patch_size[1] // 4)
+        )
+        tr = pattern.rotate(2).place_centre(
+            offset=(3 * patch_size[0] // 4, 3 * patch_size[1] // 4)
+        )
+        br = pattern.rotate(3).place_centre(
+            offset=(3 * patch_size[0] // 4, patch_size[1] // 4)
+        )
+        self.pattern = merge_positions(merge_positions(merge_positions(bl, tl), tr), br)
 
         # If we make the pattern too sparse, it just dies quickly
         # xy = self.rng.integers(0, 12, size=(2, 100))
@@ -77,14 +92,22 @@ class Bot:
         -------
         An object containing the x and y coordinates of the new cells.
         """
-        if tokens >= 5:
-            # Pick a random empty region of size 3x3 inside my patch
-            empty_regions = helpers.find_empty_regions(patch, (3, 3))
-            nregions = len(empty_regions)
-            if nregions == 0:
-                return None
-            # Make a glider
-            ind = self.rng.integers(0, nregions)
-            x = np.array([1, 2, 0, 1, 2]) + empty_regions[ind, 1]
-            y = np.array([2, 1, 0, 0, 0]) + empty_regions[ind, 0]
-            return Positions(x=x, y=y)
+        pass
+        # if tokens >= 5:
+        #     # Pick a random empty region of size 3x3 inside my patch
+        #     empty_regions = helpers.find_empty_regions(patch, (3, 3))
+        #     nregions = len(empty_regions)
+        #     if nregions == 0:
+        #         return None
+        #     # Make a glider
+        #     ind = self.rng.integers(0, nregions)
+        #     x = np.array([1, 2, 0, 1, 2]) + empty_regions[ind, 1]
+        #     y = np.array([2, 1, 0, 0, 0]) + empty_regions[ind, 0]
+        #     return Positions(x=x, y=y)
+
+
+def merge_positions(a: Positions, b: Positions) -> Positions:
+    return Positions(
+        x=np.concatenate([a.x, b.x]),
+        y=np.concatenate([a.y, b.y]),
+    )
