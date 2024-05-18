@@ -15,12 +15,32 @@ class Pattern:
     def rotate(self, k: int) -> Pattern:
         return Pattern(np.rot90(self.filled, k))
 
-    def place_centre(self, offset: tuple[int, int] | None = None) -> Positions:
+    def flipy(self) -> Pattern:
+        return Pattern(np.flip(self.filled, 0))
+
+    def flipx(self) -> Pattern:
+        return Pattern(np.flip(self.filled, 1))
+
+    def place(
+        self,
+        offset: tuple[int, int] | None = None,
+        corner_offset: tuple[int, int] | None = None,
+    ) -> Positions:
+        """Return positions for the pattern.
+
+        Parameters
+        ----------
+        offset:
+            Shift the centre of the pattern byt this offset.
+        """
         size = self.filled.shape
         y, x = np.where(self.filled)
         if offset is not None:
-            x = x + offset[0] - size[0] // 2
-            y = y + offset[1] - size[1] // 2
+            x = x + offset[1] - size[1] // 2
+            y = y + offset[0] - size[0] // 2
+        if corner_offset is not None:
+            x = x + corner_offset[1]
+            y = y + corner_offset[0]
 
         return Positions(
             x=x,
@@ -30,6 +50,10 @@ class Pattern:
     @property
     def cost(self) -> int:
         return np.sum(self.filled)
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.filled.shape
 
 
 def load_pattern(name: str) -> Pattern:
@@ -45,5 +69,6 @@ def load_pattern(name: str) -> Pattern:
         filled.append([c == "O" for c in line])
     n_col = max(len(row) for row in filled)
     filled = [row + [False] * (n_col - len(row)) for row in filled]
+    filled = filled[::-1]  # flip y to match coord system of game
     filled = np.array(filled)
     return Pattern(filled)
