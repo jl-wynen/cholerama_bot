@@ -3,10 +3,11 @@
 from typing import Optional, Tuple
 
 import numpy as np
-
 from cholerama import Positions, helpers
 
-AUTHOR = "YeastieBoys"  # This is your team name
+from .patterns import load_pattern
+
+AUTHOR = "Protomolecule"  # This is your team name
 SEED = None  # Set this to a value to make runs reproducible
 
 
@@ -39,17 +40,19 @@ class Bot:
         """
         self.number = number  # Mandatory: this is your number on the board
         self.name = name  # Mandatory: player name
-        self.color = None  # Optional
+        self.color = "#5fa5ad"
         self.patch_location = patch_location
         self.patch_size = patch_size
 
         self.rng = np.random.default_rng(SEED)
 
+        self.pattern = load_pattern("timebomb")
+
         # If we make the pattern too sparse, it just dies quickly
-        xy = self.rng.integers(0, 12, size=(2, 100))
-        self.pattern = Positions(
-            x=xy[1] + patch_size[1] // 2, y=xy[0] + patch_size[0] // 2
-        )
+        # xy = self.rng.integers(0, 12, size=(2, 100))
+        # self.pattern = Positions(
+        #     x=xy[1] + patch_size[1] // 2, y=xy[0] + patch_size[0] // 2
+        # )
         # The pattern can also be just an image (0=white, 1=black)
         # self.pattern = "mypattern.png"
 
