@@ -1,3 +1,3 @@
-# Germ bot
+# Jankas bot
 
-Template bot for the [Cholerama](https://github.com/nvaytet/cholerama) game
+Bot for the [Cholerama](https://github.com/nvaytet/cholerama) game by Jan-Lukas Wynen.
