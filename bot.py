@@ -3,9 +3,9 @@
 from typing import Optional, Tuple
 
 import numpy as np
-from cholerama import Positions, helpers
+from cholerama import Positions
 
-from .patterns import load_pattern
+from .patterns import Pattern, load_pattern
 
 AUTHOR = "Protomolecule"  # This is your team name
 SEED = None  # Set this to a value to make runs reproducible
@@ -46,22 +46,27 @@ class Bot:
 
         self.rng = np.random.default_rng(SEED)
 
-        pattern_name = "blocklayingswitchenginepredecessor"
-        pattern = load_pattern(pattern_name)
+        self.patterns = load_patterns()
 
-        bl = pattern.rotate(0).place_centre(
-            offset=(patch_size[0] // 4, patch_size[1] // 4)
-        )
-        tl = pattern.rotate(1).place_centre(
-            offset=(patch_size[0] // 4, 3 * patch_size[1] // 4)
-        )
-        tr = pattern.rotate(2).place_centre(
-            offset=(3 * patch_size[0] // 4, 3 * patch_size[1] // 4)
-        )
-        br = pattern.rotate(3).place_centre(
-            offset=(3 * patch_size[0] // 4, patch_size[1] // 4)
-        )
-        self.pattern = merge_positions(merge_positions(merge_positions(bl, tl), tr), br)
+        # Spawn initial spaceship to stay alive until we have enough tokens.
+        self.pattern = self.patterns["glider"].rotate(2).place_centre()
+        self.pending_pattern: Pattern | None = self.patterns["max107"]
+        #
+        # bl = pattern.rotate(0).place_centre(
+        #     offset=(patch_size[0] // 4, patch_size[1] // 4)
+        # )
+        # tl = pattern.rotate(1).place_centre(
+        #     offset=(patch_size[0] // 4, 3 * patch_size[1] // 4)
+        # )
+        # self.pattern = merge_positions(bl, tl)
+        # tr = pattern.rotate(2).place_centre(
+        #     offset=(3 * patch_size[0] // 4, 3 * patch_size[1] // 4)
+        # )
+        # br = pattern.rotate(3).place_centre(
+        #     offset=(3 * patch_size[0] // 4, patch_size[1] // 4)
+        # )
+        # self.pattern = bl
+        # self.pattern = merge_positions(merge_positions(merge_positions(bl, tl), tr), br)
 
         # If we make the pattern too sparse, it just dies quickly
         # xy = self.rng.integers(0, 12, size=(2, 100))
@@ -92,22 +97,30 @@ class Bot:
         -------
         An object containing the x and y coordinates of the new cells.
         """
-        pass
-        # if tokens >= 5:
-        #     # Pick a random empty region of size 3x3 inside my patch
-        #     empty_regions = helpers.find_empty_regions(patch, (3, 3))
-        #     nregions = len(empty_regions)
-        #     if nregions == 0:
-        #         return None
-        #     # Make a glider
-        #     ind = self.rng.integers(0, nregions)
-        #     x = np.array([1, 2, 0, 1, 2]) + empty_regions[ind, 1]
-        #     y = np.array([2, 1, 0, 0, 0]) + empty_regions[ind, 0]
-        #     return Positions(x=x, y=y)
+        if self.pending_pattern is not None and tokens >= self.pending_pattern.cost:
+            pattern = self.pending_pattern
+            self.pending_pattern = None
+            return pattern.place_centre((patch.shape[0] // 2, patch.shape[1] // 2))
 
 
-def merge_positions(a: Positions, b: Positions) -> Positions:
+def merge_positions(*pos: Positions) -> Positions:
     return Positions(
-        x=np.concatenate([a.x, b.x]),
-        y=np.concatenate([a.y, b.y]),
+        x=np.concatenate([p.x for p in pos]),
+        y=np.concatenate([p.y for p in pos]),
     )
+
+
+_PATTERN_NAMES = [
+    "backrake2",
+    "blocklayingswitchenginepredecessor",
+    "glider",
+    "lwss",
+    "max107",
+    "max110",
+    "max127",
+    "timebomb",
+]
+
+
+def load_patterns() -> dict[str, Pattern]:
+    return {name: load_pattern(name) for name in _PATTERN_NAMES}

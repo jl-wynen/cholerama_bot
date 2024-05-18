@@ -27,6 +27,10 @@ class Pattern:
             y=y,
         )
 
+    @property
+    def cost(self) -> int:
+        return np.sum(self.filled)
+
 
 def load_pattern(name: str) -> Pattern:
     cells = (
@@ -39,5 +43,7 @@ def load_pattern(name: str) -> Pattern:
         if line.startswith("!"):
             continue
         filled.append([c == "O" for c in line])
+    n_col = max(len(row) for row in filled)
+    filled = [row + [False] * (n_col - len(row)) for row in filled]
     filled = np.array(filled)
     return Pattern(filled)
