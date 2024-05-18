@@ -45,13 +45,13 @@ class Bot:
         self.patch_size = patch_size
 
         self.rng = np.random.default_rng(SEED)
-        match self.rng.integers(0, 3):
+        match self.rng.integers(0, 2):
             case 0:
                 self.strategy = GuardedBomb(self.rng, self.patch_size)
             case 1:
                 self.strategy = EarlyBomb(self.rng, self.patch_size)
-            case 2:
-                self.strategy = LateBomb(self.rng, self.patch_size)
+            # case 2:
+            #     self.strategy = LateBomb(self.rng, self.patch_size)
         self.pattern = self.strategy.place_initial()
 
     def iterate(
